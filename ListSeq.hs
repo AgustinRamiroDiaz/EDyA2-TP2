@@ -2,6 +2,8 @@ module ListSeq where
 
 import Seq
 
+data TreeView a = E | EL a | Node [a] [a]
+
 instance Seq [] where
     emptyS = vacia
     singletonS = singular
@@ -13,9 +15,9 @@ instance Seq [] where
     appendS = concatenarLista
     takeS lista n = take n lista
     dropS lista n = drop n lista
-    -- showtS     :: s a -> TreeView a (s a)
+    showtS        = mostrarArbol    
     showlS = mostrarLista
-    -- joinS      :: s (s a) -> s a
+    joinS  = aplanar
     -- reduceS    :: (a -> a -> a) -> a -> s a -> a
     scanS = escanear
     fromList = desdeLista
@@ -57,8 +59,19 @@ concatenarLista :: [a] -> [a] -> [a]
 concatenarLista xs ys = xs ++ ys
 
 
+mostrarArbol :: [a] -> TreeView a [a]
+mostrarArbol []     = E
+mostrarArbol [x]    = EL x
+mostrarArbol (x:xs) = Node (take seq  (l / 2)) Node (drop seq  (l / 2))
+                      where
+                           l = longitud (x:xs)
 
---mostrarArbol :: [a] -> TreeView a [a]
+
+aplanar :: [[a]] -> [a]
+aplanar [] = []
+aplanar [[x]] = [x]
+aplanar (xs : xss) = appendS xs (aplanar xss)
+
 
 mostrarLista :: [a] -> ListView a [a]
 mostrarLista [] = NIL

@@ -70,21 +70,3 @@ escanear' oplus (h: t) rs =
         where
             e = rs `oplus` h
             recursion = escanear' oplus t e
-
-
-
-
-[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-[1, 2, 3, 4, 5, 6, 7, 8] 
-[1, 2, 3, 4]          [5, 6, 7, 8] 
-([1, 2] f [3, 4]) f ([5, 6] f [7, 8]) f ((9 f 10) f 11)
-
-
-
-
-
-         [9, 10, 11]
-
-     [9, 10]      [11]
-
-   (9 oplus 10)  oplus 11

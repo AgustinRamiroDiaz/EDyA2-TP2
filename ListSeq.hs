@@ -101,7 +101,31 @@ reducir oplus neutro sequencia = oplus neutro (reducir' oplus sequencia)
 
     Análogo para la profundidad
 -}
+---------------------------------------------------
+{-
+ Hacer esto sería lo mismo que lo anterior sin la necesidad de pasarlo a arbol para hacer la reducción
+ habría que ver como paralizarlo pero en rdcr se pueden hacer de a pares en forma paralela ya que no se 
+ necesitan mutuamente los pares para ejecutarse (resolver las hojas con oplus de a pares)
 
+ en rdcr' llegan una lista con estos resultados anteriores... lo que se hace es que si tenemos 
+            [x1,x2,x3,x4,...]
+
+            resolvemos como  oplus (oplus (oplus x1 x2) (oplus x3 x4)) RESTO DE LISTA
+
+            que si no me equivoco coincidiría con lo anterior y tambien se podria paralelizar cada uno de estos.
+-}
+rdcir :: (a -> a -> a) -> a -> [a] -> a
+rdcir oplus neutro xs = oplus neutro (rdcr oplus xs [])
+
+rdcr :: (a -> a -> a) -> [a] -> [a] -> a
+rdcr oplus [] rs = rdcr' oplus neutro rs
+rdcr oplus [x] rs = x : rs
+rdcr oplus (x:y:xs) rs = (oplus x y) : rs 
+
+rdcr' :: (a -> a -> a) -> [a] -> a
+rdcr' oplus [x]      =  x
+rdcr' oplus (x:y:w:k:xs) = oplus (oplus (oplus x y) (oplus w k)) (rdcr)  
+---------------------------------------------------------------
 escanear :: (a -> a -> a) -> a -> [a] -> ([a], a)
 escanear oplus n [] = ([],n)
 escanear oplus n xs = escanear' oplus xs n

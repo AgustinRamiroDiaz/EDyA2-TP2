@@ -70,11 +70,15 @@ mostrarLista :: [a] -> ListView a [a]
 mostrarLista [] = NIL
 mostrarLista (h: t) = CONS h t
 
+longitud [] = 0
+longitud (h:t) = 1 + longitud t
+
+
 reducir' :: (a -> a -> a)-> [a] -> a
 reducir' oplus [x] = x 
 reducir' oplus sequencia = oplus left' right'
     where 
-        n = length sequencia
+        n = longitud sequencia
         m = 2 ^ (floor $ (logBase 2 (fromIntegral (n - 1))))
         (left, right) = splitAt m sequencia
         (left', right') = (reducir' oplus left) ||| (reducir' oplus right)
@@ -94,7 +98,7 @@ reducir oplus neutro sequencia = oplus neutro (reducir' oplus sequencia)
     .°. W(n) = O(n * lg n)
 
     D (0) = 1
-    D (n) = 1 + D_oplus + D_reducir'(n) <= k + 2n + D_m + W(n/2) <= cn + W(n/2)             -- Suponemos suave
+    D (n) = 1 + D_oplus + D_reducir'(n) <= k + 2n + D_m + D(n/2) <= cn + D(n/2)             -- Suponemos suave
     Aplicando el teorema maestro y suavidad
     .°. D(n) = O(n)
 
@@ -114,17 +118,20 @@ reducir oplus neutro sequencia = oplus neutro (reducir' oplus sequencia)
 
             que si no me equivoco coincidiría con lo anterior y tambien se podria paralelizar cada uno de estos.
 -}
-rdcir :: (a -> a -> a) -> a -> [a] -> a
-rdcir oplus neutro xs = oplus neutro (rdcr oplus xs [])
 
-rdcr :: (a -> a -> a) -> [a] -> [a] -> a
-rdcr oplus [] rs = rdcr' oplus neutro rs
-rdcr oplus [x] rs = x : rs
-rdcr oplus (x:y:xs) rs = (oplus x y) : rs 
+reduxir :: (a -> a -> a) -> a -> [a] -> a
+reduxir oplus neutro [] = neutro
+reduxir oplus neutro [x] = oplus neutro x
+reduxir oplus neutro sequencia = reduxir oplus neutro (metamap oplus sequencia)
 
-rdcr' :: (a -> a -> a) -> [a] -> a
-rdcr' oplus [x]      =  x
-rdcr' oplus (x:y:w:k:xs) = oplus (oplus (oplus x y) (oplus w k)) (rdcr)  
+metamap :: (a -> a -> a) -> [a] -> [a]
+metamap oplus [] = []
+metamap oplus [x] = [x]
+metamap oplus (x:y:tail) = 
+    h:t
+    where (h,t) = (oplus x y) ||| (metamap oplus tail)
+
+
 ---------------------------------------------------------------
 escanear :: (a -> a -> a) -> a -> [a] -> ([a], a)
 escanear oplus n [] = ([],n)
@@ -137,6 +144,7 @@ escanear' oplus (h: t) rs =
         where -- ver paralelizar
             e = rs `oplus` h
             recursion = escanear' oplus t e
+
 
 {-
     Consideramos los costos sobre la longitud de la lista

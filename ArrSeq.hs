@@ -15,7 +15,7 @@ instance Seq A.Arr where
     nthS seq n =  seq ! n
     tabulateS = A.tabulate
     mapS = mapear
-    --filterS = filter
+    filterS = filtrar
     appendS = concatenar 
     takeS seq n = A.subArray 0 n seq
     dropS seq n = A.subArray n ((lengthS seq) - 1) seq
@@ -54,3 +54,11 @@ concatenar a b = tabulateS (\i-> if i < l1 then a ! i else b ! (i - l1) ) lt
                	    l1 = (lengthS a)
                	    l2 = (lengthS b)
                     lt = (l1 + l2)
+
+filtrar :: (a -> Bool) -> A.Arr a -> A.Arr a
+
+filtrar p ap = joinS $ tabulateS (\i-> let elem = (ap ! i) 
+                                         in 
+                                           if p elem then singletonS elem
+                                                     else emptyS
+                                 ) (lengthS ap)  

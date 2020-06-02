@@ -28,11 +28,7 @@ instance Seq A.Arr where
 
 
 mapear :: (a -> b) -> A.Arr a -> A.Arr b
-mapear f ap | lAP == 1  = singletonS (f (ap ! 0) )  
-            | lAP  > 1  = appendS (singletonS (f (ap ! 0) )) (mapear f (dropS ap 1))
-            | otherwise = A.empty  
-              where
-                   lAP = lengthS ap
+mapear f ap = tabulateS (\i -> f (ap ! i)) (lengthS ap) 
 
 
 mostrarArbol :: A.Arr a -> TreeView a (A.Arr a)

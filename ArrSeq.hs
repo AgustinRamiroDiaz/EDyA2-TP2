@@ -12,28 +12,28 @@ instance Seq A.Arr where
     emptyS = A.empty
     singletonS x = A.tabulate (\_-> x) 1
     lengthS = A.length
-    nthS seq n =  (!) seq n
+    nthS seq n =  seq ! n
     tabulateS = A.tabulate
-    --mapS = mapear
+    mapS = mapear
     --filterS = filter
-    --appendS seq1 seq2 =    FLATTEN ARRAY SEQ 1 SEQ 2
+    appendS = concatenar 
     takeS seq n = A.subArray 0 n seq
-    dropS seq n = A.subArray n (lengthS seq) seq
+    dropS seq n = A.subArray n ((lengthS seq) - 1) seq
     showtS = mostrarArbol
     showlS = mostrarLista
-    --joinS = concat
+    joinS = A.flatten
     --reduceS = reducir
     --scanS = escanear
-    --fromList = id
+    fromList = A.fromList
 
-{-
-  mapear :: (a -> b) -> AP a -> AP b
-  mapear f emptyS = emptyS
-  mapear f ap | lAP == 1  = singletonS (f (ap `!` 0) )  
-              | lAP  > 1  = appendS (f (ap `!` 0) ) (mapear f (dropS ap 1))
+
+mapear :: (a -> b) -> A.Arr a -> A.Arr b
+mapear f ap | lAP == 1  = singletonS (f (ap ! 0) )  
+            | lAP  > 1  = appendS (singletonS (f (ap ! 0) )) (mapear f (dropS ap 1))
+            | otherwise = A.empty  
               where
                    lAP = lengthS ap
--}
+
 
 mostrarArbol :: A.Arr a -> TreeView a (A.Arr a)
 mostrarArbol arr | lAP == 1  = ELT (nthS arr 0)
@@ -49,3 +49,12 @@ mostrarLista arr | lAP == 0   = NIL
                  where
                    lAP = lengthS arr 
 
+pepito :: Int -> A.Arr Int
+pepito x  = tabulateS id x
+
+concatenar :: A.Arr a -> A.Arr a -> A.Arr a
+concatenar a b = tabulateS (\i-> if i < l1 then a ! i else b ! (i - l1) ) lt 
+               where 
+               	    l1 = (lengthS a)
+               	    l2 = (lengthS b)
+                    lt = (l1 + l2)

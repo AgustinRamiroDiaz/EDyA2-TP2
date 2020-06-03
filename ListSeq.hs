@@ -127,9 +127,8 @@ reduxir oplus neutro sequencia = reduxir oplus neutro (metamap oplus sequencia)
 metamap :: (a -> a -> a) -> [a] -> [a]
 metamap oplus [] = []
 metamap oplus [x] = [x]
-metamap oplus (x:y:tail) = 
-    h:t
-    where (h,t) = (oplus x y) ||| (metamap oplus tail)
+metamap oplus (x:y:tail) = h:t  
+                where (h,t) = (oplus x y) ||| (metamap oplus tail)
 
 
 ---------------------------------------------------------------

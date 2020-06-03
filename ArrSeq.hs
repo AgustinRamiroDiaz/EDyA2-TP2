@@ -6,6 +6,8 @@ import qualified Arr as A
 
 import  Arr ((!))
 
+(|||) :: a -> b -> (a, b)
+a ||| b = (a, b)
 
 instance Seq A.Arr where
 
@@ -18,11 +20,11 @@ instance Seq A.Arr where
     filterS = filtrar
     appendS = concatenar 
     takeS seq n = A.subArray 0 n seq
-    dropS seq n = A.subArray n ((lengthS seq) - 1) seq
+    dropS seq n = A.subArray n ((lengthS seq)  - n) seq
     showtS = mostrarArbol
     showlS = mostrarLista
     joinS = A.flatten
-    --reduceS = reducir
+    reduceS = reducir
     --scanS = escanear
     fromList = A.fromList
 
@@ -60,3 +62,17 @@ filtrar p ap = joinS $ tabulateS (\i-> let elem = (ap ! i)
                                                      else emptyS
                                  ) (lengthS ap)
 
+reducir :: (a -> a -> a) -> a -> A.Arr a -> a
+reducir oplus neutro ap  | lAP == 0  = neutro
+                         | otherwise = oplus neutro (reducir' oplus ap)
+                         where 
+                         lAP = lengthS ap
+
+reducir' :: (a -> a -> a)-> A.Arr a -> a
+reducir' oplus ap | n == 1  = ap ! 0  
+                  | otherwise = oplus left' right'
+    where 
+        n = lengthS ap
+        m = 2 ^ (floor $ (logBase 2 (fromIntegral (n - 1))))
+        (left, right) = (takeS ap m) ||| (dropS ap m)
+        (left', right') = (reducir' oplus left) ||| (reducir' oplus right)

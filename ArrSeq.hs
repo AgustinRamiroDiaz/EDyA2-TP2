@@ -45,9 +45,6 @@ mostrarLista arr | lAP == 0   = NIL
                  where
                    lAP = lengthS arr 
 
-pepito :: Int -> A.Arr Int
-pepito x  = tabulateS id x
-
 concatenar :: A.Arr a -> A.Arr a -> A.Arr a
 concatenar a b = tabulateS (\i-> if i < l1 then a ! i else b ! (i - l1) ) lt 
                where 
@@ -61,4 +58,5 @@ filtrar p ap = joinS $ tabulateS (\i-> let elem = (ap ! i)
                                          in 
                                            if p elem then singletonS elem
                                                      else emptyS
-                                 ) (lengthS ap)  
+                                 ) (lengthS ap)
+

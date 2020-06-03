@@ -135,7 +135,8 @@ metamap oplus (x:y:tail) =
 ---------------------------------------------------------------
 escanear :: (a -> a -> a) -> a -> [a] -> ([a], a)
 escanear oplus n [] = ([],n)
-escanear oplus n xs = escanear' oplus xs n
+escanear oplus n xs = (n : fst result, snd result)
+    where result = escanear' oplus xs n
 
 escanear' :: (a -> a -> a) -> [a] -> a -> ([a], a)
 escanear' oplus [x] rs = ([], rs `oplus` x)
@@ -167,3 +168,20 @@ escanear' oplus (h: t) rs =
 
     Análogo para la profundidad
 -}
+{-
+s=  〈x0,           x1,         x2,                               x3〉
+s′= (〈b,                      b⊕x0⊕x1,               〉,        b⊕x0⊕x1⊕x2⊕x3)
+r= (〈b,           b⊕x0,      b⊕x0⊕x1,   b⊕x0⊕x1⊕x2〉,       b⊕x0⊕x1⊕x2⊕x3)
+
+
+s=  〈x0,           x1,         x2,                 x3                                       x4〉
+s′= (〈b,                       b⊕x0⊕x1                                             〉,    b⊕x0⊕x1⊕x2⊕x3⊕x4)
+r= (〈b,        b⊕x0,          b⊕x0⊕x1,     b⊕x0⊕x1⊕x2         b⊕x0⊕x1⊕x2⊕x3〉,     b⊕x0⊕x1⊕x2⊕x3⊕x4)
+-}
+
+scanear oplus neutro s = (magia oplus s (fst s') , snd s')           -- r
+    where s' = escanear oplus neutro (metamap oplus s)
+
+magia oplus [x, _] [x'] = [x', x' `oplus` x]
+magia oplus [x,y,_] [x'] = [x',x' `oplus` x, (x' `oplus` x) `oplus` y]
+magia oplus (hs:_:ts) (hs':ts') = hs': (hs' `oplus` hs) : magia oplus ts ts'

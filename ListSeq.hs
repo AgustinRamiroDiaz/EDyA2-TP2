@@ -181,6 +181,8 @@ r= (〈b,        b⊕x0,          b⊕x0⊕x1,     b⊕x0⊕x1⊕x2         b⊕
 scanear oplus neutro s = (magia oplus s (fst s') , snd s')           -- r
     where s' = escanear oplus neutro (metamap oplus s)
 
-magia oplus [x, _] [x'] = [x', x' `oplus` x]
-magia oplus [x,y,_] [x'] = [x',x' `oplus` x, (x' `oplus` x) `oplus` y]
+magia oplus [] [] = []
+magia oplus [x] [x'] = [x']
 magia oplus (hs:_:ts) (hs':ts') = hs': (hs' `oplus` hs) : magia oplus ts ts'
+
+f = \x y -> y+1

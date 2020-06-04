@@ -49,9 +49,8 @@ mostrarLista arr | lAP == 0   = NIL
 
 concatenar :: A.Arr a -> A.Arr a -> A.Arr a
 concatenar a b = tabulateS (\i-> if i < l1 then a ! i else b ! (i - l1) ) lt 
-               where 
-               	    l1 = (lengthS a)
-               	    l2 = (lengthS b)
+               where
+                    (l1,l2) = (lengthS a) ||| (lengthS b) 
                     lt = (l1 + l2)
 
 filtrar :: (a -> Bool) -> A.Arr a -> A.Arr a

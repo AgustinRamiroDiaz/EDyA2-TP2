@@ -32,6 +32,14 @@ instance Seq A.Arr where
 mapear :: (a -> b) -> A.Arr a -> A.Arr b
 mapear f ap = tabulateS (\i -> f (ap ! i)) (lengthS ap) 
 
+{-
+como ! es constante la funcion (\i -> f (ap ! i)) es del mismo orden que f
+
+  COSTOS mapS
+    W (n) = W_tabulateS -en base a f- + k = O (sumatoria de x=1 a x=n de W f(x))
+
+    Analogo con profundidad de tabulateS
+-}
 
 mostrarArbol :: A.Arr a -> TreeView a (A.Arr a)
 mostrarArbol arr | lAP == 1  = ELT (nthS arr 0)
@@ -52,6 +60,15 @@ concatenar a b = tabulateS (\i-> if i < l1 then a ! i else b ! (i - l1) ) lt
                where
                     (l1,l2) = (lengthS a) ||| (lengthS b) 
                     lt = (l1 + l2)
+
+{-
+la funcion lambda es constante por composicion de funciones constante
+   COSTOS
+
+        W (n) = W_tabulateS de la funcion lambda + k  = O(n)  (sumatoria de n W constantes)
+
+        S (n) = S_tabulateS de la funcion lambda + k  = O(1)  (maximo entre n S constantes)     
+-}
 
 filtrar :: (a -> Bool) -> A.Arr a -> A.Arr a
 

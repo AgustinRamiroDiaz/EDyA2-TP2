@@ -30,18 +30,23 @@ tabular f n = tabular' f n 0
 
 tabular' :: (Int -> a) -> Int -> Int -> [a]
 tabular' f 1 i = [f i] 
-tabular' f n i = f i : (tabular' f (n-1) (i+1)) 
+tabular' f n i = h : t
+             where
+                (h,t) = (f i) ||| (tabular' f (n-1) (i+1)) 
 
 mapear :: (a -> b) -> [a] -> [b]
 mapear f [] = []
-mapear f (h: t) = (f h): (mapear f t)
+mapear f (h: t) = h : t
+             where
+                (h,t) = (f h) ||| (mapear f t)
+ 
 {-
     Consideramos los costos sobre la longitud de la lista
     W (0) = c
     W (n) = k' + W (n-1) + W_f(n) <= W(n-1) + k
     .°. W(n) = O(n)
 
-    Análogo para la profundidad
+    ---VER--- Análogo para la profundidad
 -}
 
 concatenarLista :: [a] -> [a] -> [a]
@@ -74,55 +79,10 @@ longitud [] = 0
 longitud (h:t) = 1 + longitud t
 
 
-reducir' :: (a -> a -> a)-> [a] -> a
-reducir' oplus [x] = x 
-reducir' oplus sequencia = oplus left' right'
-    where 
-        n = longitud sequencia
-        m = 2 ^ (floor $ (logBase 2 (fromIntegral (n - 1))))
-        (left, right) = splitAt m sequencia
-        (left', right') = (reducir' oplus left) ||| (reducir' oplus right)
-
 reducir :: (a -> a -> a) -> a -> [a] -> a
 reducir oplus neutro [] = neutro
-reducir oplus neutro sequencia = oplus neutro (reducir' oplus sequencia)
-{-
-    **AVERIGUAR COSTOS DE EXPONENTE, LOGARITMO, PISO, CASTEO --- COSTO DE TRANSFORMAR A ARBOL / SI HABIA QUE HACERLO
-    ** OPLUS PARA MAPS QUE ONDA WEY
-    Consideramos los costos sobre la longitud de la lista
-    W (0) = c'
-    W (n) = k' + W_oplus + W_reducir'(n) <= k + 2n + W_m + 2W(n/2) <= cn + 2W(n/2)             -- Suponemos suave
-    Aplicando el teorema maestro y suavidad
-
-    
-    .°. W(n) = O(n * lg n)
-
-    D (0) = 1
-    D (n) = 1 + D_oplus + D_reducir'(n) <= k + 2n + D_m + D(n/2) <= cn + D(n/2)             -- Suponemos suave
-    Aplicando el teorema maestro y suavidad
-    .°. D(n) = O(n)
-
-
-    Análogo para la profundidad
--}
----------------------------------------------------
-{-
- Hacer esto sería lo mismo que lo anterior sin la necesidad de pasarlo a arbol para hacer la reducción
- habría que ver como paralizarlo pero en rdcr se pueden hacer de a pares en forma paralela ya que no se 
- necesitan mutuamente los pares para ejecutarse (resolver las hojas con oplus de a pares)
-
- en rdcr' llegan una lista con estos resultados anteriores... lo que se hace es que si tenemos 
-            [x1,x2,x3,x4,...]
-
-            resolvemos como  oplus (oplus (oplus x1 x2) (oplus x3 x4)) RESTO DE LISTA
-
-            que si no me equivoco coincidiría con lo anterior y tambien se podria paralelizar cada uno de estos.
--}
-
-reduxir :: (a -> a -> a) -> a -> [a] -> a
-reduxir oplus neutro [] = neutro
-reduxir oplus neutro [x] = oplus neutro x
-reduxir oplus neutro sequencia = reduxir oplus neutro (metamap oplus sequencia)
+reducir oplus neutro [x] = oplus neutro x
+reducir oplus neutro sequencia = reducir oplus neutro (metamap oplus sequencia)
 
 metamap :: (a -> a -> a) -> [a] -> [a]
 metamap oplus [] = []
@@ -130,7 +90,28 @@ metamap oplus [x] = [x]
 metamap oplus (x:y:tail) = h:t  
                 where (h,t) = (oplus x y) ||| (metamap oplus tail)
 
+{-
+  COSTO METAMAP
 
+    W (0) = c
+    W (1) = c'
+    W (n) = W oplus + W (n-2) + k = ... O(n)
+
+    S (0) = c
+    s (1) = c'
+    s (n) = MAX ( S_oplus , S (n-2) ) + k = ... O(n)
+
+
+ COSTO REDUCIR
+
+    W (0) = c
+    W (1) = W_oplus = c'
+    W (n) = W_metamap (n) + W_oplus + W (n/2) + k <= k*n + W(n/2)   .*. W (n) = O(n), por tercer
+    caso del teorema maestro y suavidad
+
+ ANALOGO PROFUNDIDAD
+
+-}
 ---------------------------------------------------------------
 escanear :: (a -> a -> a) -> a -> [a] -> ([a], a)
 escanear oplus n [] = ([],n)
@@ -186,3 +167,9 @@ magia oplus [x] [x'] = [x']
 magia oplus (hs:_:ts) (hs':ts') = hs': (hs' `oplus` hs) : magia oplus ts ts'
 
 f = \x y -> y+1
+
+
+
+{-
+    CUANDO TERMINEMOS LE BUSCAMOS EL COSTO
+-}

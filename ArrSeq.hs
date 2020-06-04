@@ -25,7 +25,7 @@ instance Seq A.Arr where
     showlS = mostrarLista
     joinS = A.flatten
     reduceS = reducir
-    --scanS = escanear
+    scanS = escanear
     fromList = A.fromList
 
 
@@ -76,3 +76,41 @@ reducir' oplus ap | n == 1  = ap ! 0
         m = 2 ^ (floor $ (logBase 2 (fromIntegral (n - 1))))
         (left, right) = (takeS ap m) ||| (dropS ap m)
         (left', right') = (reducir' oplus left) ||| (reducir' oplus right)
+
+
+escanear :: (a -> a -> a) -> a -> A.Arr a -> (A.Arr a, a)
+escanear oplus neutro ap = (magia oplus neutro ap (fst s'), snd s')
+                         where s' = scanear oplus neutro (metamap oplus ap)
+
+
+scanear :: (a -> a -> a) -> a -> A.Arr a -> (A.Arr a, a)
+scanear oplus neutro ap | lAP == 0  = (emptyS,neutro)
+                        | otherwise = (appendS ston (fst result), snd result)
+                         where 
+                            result = scanear' oplus ap neutro
+                            lAP = lengthS ap
+                            ston = singletonS neutro
+
+scanear' :: (a -> a -> a) -> A.Arr a -> a -> (A.Arr a, a)
+scanear' oplus ap acumulador | lAP == 1 = (emptyS, acumulador `oplus` (ap ! 0))
+                             | otherwise = (appendS (singletonS e) (fst recursion), snd recursion)
+                             where -- ver paralelizar
+                               e = (acumulador `oplus` (ap ! 0))
+                               recursion = scanear' oplus (dropS ap 1) e
+                               lAP = lengthS ap
+
+metamap :: (a -> a -> a) -> A.Arr a -> A.Arr a
+metamap oplus ap | mod lAP 2 == 0 = tabulateS (\ x ->  oplus (ap ! (2 * x)) (ap ! (2 * x + 1))) mitad
+                 | otherwise      = tabulateS (\ x ->  if x /= mitad then oplus (ap ! (2 * x)) (ap ! (2 * x + 1)) else ap ! (lAP - 1)) techoMitad
+                 where
+                    lAP   = lengthS ap
+                    mitad = div lAP 2
+                    techoMitad = mitad + 1 
+
+magia :: (a -> a -> a) -> a -> A.Arr a -> A.Arr a-> A.Arr a
+magia oplus neutro s s' = tabulateS (\x -> if (mod x 2) == 0 then s' ! (div x  2) else oplus (s' ! (div x  2)) (s ! (x - 1))) ls
+                        where
+                            ls = lengthS s
+
+
+f = (\x y -> y+1)

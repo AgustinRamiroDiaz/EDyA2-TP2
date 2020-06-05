@@ -2,8 +2,7 @@ module ListSeq where
 
 import Seq
 
-(|||) :: a -> b -> (a, b)
-a ||| b = (a, b)
+import Par ((|||))
 
 --mapS , appendS, reduceS, scanS {Hacer nosotros}
 instance Seq [] where
@@ -36,9 +35,9 @@ tabular' f n i = h : t
 
 mapear :: (a -> b) -> [a] -> [b]
 mapear f [] = []
-mapear f (h: t) = h : t
+mapear f (h: t) = h' : t'
              where
-                (h,t) = (f h) ||| (mapear f t)
+                (h',t') = (f h) ||| (mapear f t)
  
 {-
     Consideramos los costos sobre la longitud de la lista
@@ -113,63 +112,36 @@ metamap oplus (x:y:tail) = h:t
 
 -}
 ---------------------------------------------------------------
-escanear :: (a -> a -> a) -> a -> [a] -> ([a], a)
-escanear oplus n [] = ([],n)
-escanear oplus n xs = (n : fst result, snd result)
-    where result = escanear' oplus xs n
 
-escanear' :: (a -> a -> a) -> [a] -> a -> ([a], a)
-escanear' oplus [x] rs = ([], rs `oplus` x)
-escanear' oplus (h: t) rs = 
-    (e : (fst recursion), (snd recursion))
-        where -- ver paralelizar
-            e = rs `oplus` h
-            recursion = escanear' oplus t e
-
-
-{-
-    Consideramos los costos sobre la longitud de la lista
-    W (0) = c
-    W (1) = c'
-    W (n) = k' + W_escanear'(n) = k + W_escanear'(n-1)
-    
-    .°. W(n) = O(n)
-
-    Consideramos los costos sobre la longitud de la lista
-    D (0) = 1
-    D (1) = 2
-    D (n) = 1 + max(D_oplus +  D_escanear'(n))
-    
-    D_escanear'(n) = 1 + D_escanear'(n-1)
-    .°. D_escanear'(n) = O(n)
-
-    .°. D(n) = O(n)
-
-
-    Análogo para la profundidad
--}
-{-
-s=  〈x0,           x1,         x2,                               x3〉
-s′= (〈b,                      b⊕x0⊕x1,               〉,        b⊕x0⊕x1⊕x2⊕x3)
-r= (〈b,           b⊕x0,      b⊕x0⊕x1,   b⊕x0⊕x1⊕x2〉,       b⊕x0⊕x1⊕x2⊕x3)
-
-
-s=  〈x0,           x1,         x2,                 x3                                       x4〉
-s′= (〈b,                       b⊕x0⊕x1                                             〉,    b⊕x0⊕x1⊕x2⊕x3⊕x4)
-r= (〈b,        b⊕x0,          b⊕x0⊕x1,     b⊕x0⊕x1⊕x2         b⊕x0⊕x1⊕x2⊕x3〉,     b⊕x0⊕x1⊕x2⊕x3⊕x4)
--}
-
-scanear oplus neutro s = (magia oplus s (fst s') , snd s')           -- r
+escanear oplus neutro [] = ([], neutro)
+escanear oplus neutro [x] = ([neutro], neutro `oplus` x)
+escanear oplus neutro s = (completar oplus s (fst s') , snd s')           -- r
     where s' = escanear oplus neutro (metamap oplus s)
 
-magia oplus [] [] = []
-magia oplus [x] [x'] = [x']
-magia oplus (hs:_:ts) (hs':ts') = hs': (hs' `oplus` hs) : magia oplus ts ts'
+completar oplus [] [] = []
+completar oplus [x] [x'] = [x']
+completar oplus (hs:_:ts) (hs':ts') = hs': (hs' `oplus` hs) : completar oplus ts ts'
 
 f = \x y -> y+1
 
+{-
+    Costo de completar
+    W(completar oplus 0) = c0
+    W(completar oplus 1) = c1
+    W(completar oplus n) = W(completar oplus n-2) + W(oplus) + c => O(n)
 
+    S(completar oplus 0) = c0
+    S(completar oplus 1) = c1
+    S(completar oplus n) = S(completar oplus n-2) + c => O(n)
+-}
 
 {-
-    CUANDO TERMINEMOS LE BUSCAMOS EL COSTO
+    Costo escanear
+    W(escanear oplus 0) = c0
+    W(escanear oplus 0) = c1 + W(oplus) = c2
+    W(escanear oplus n) = W(metamap oplus n) + W(escanear oplus n/2) + W(oplus) + W(completar oplus n) c = W(escanear oplus n/2) + c'n => O(n^2)
+
+    D(escanear oplus 0) = c0
+    D(escanear oplus 0) = c1 + D(oplus) = c2
+    D(escanear oplus n) = D(metamap oplus n) + D(escanear oplus n/2) + D(completar oplus n) + c = D(escanear oplus n/2) + c'n => O(n^2)
 -}

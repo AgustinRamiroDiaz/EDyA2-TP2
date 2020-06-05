@@ -10,7 +10,6 @@ import  Arr ((!))
 a ||| b = (a, b)
 
 instance Seq A.Arr where
-
     emptyS = A.empty
     singletonS x = A.tabulate (\_-> x) 1
     lengthS = A.length
@@ -95,25 +94,13 @@ reducir' oplus ap | n == 1  = ap ! 0
 
 
 escanear :: (a -> a -> a) -> a -> A.Arr a -> (A.Arr a, a)
-escanear oplus neutro ap = (magia oplus neutro ap (fst s'), snd s')
-                         where s' = scanear oplus neutro (metamap oplus ap)
-
-
-scanear :: (a -> a -> a) -> a -> A.Arr a -> (A.Arr a, a)
-scanear oplus neutro ap | lAP == 0  = (emptyS,neutro)
-                        | otherwise = (appendS ston (fst result), snd result)
-                         where 
-                            result = scanear' oplus ap neutro
-                            lAP = lengthS ap
-                            ston = singletonS neutro
-
-scanear' :: (a -> a -> a) -> A.Arr a -> a -> (A.Arr a, a)
-scanear' oplus ap acumulador | lAP == 1 = (emptyS, acumulador `oplus` (ap ! 0))
-                             | otherwise = (appendS (singletonS e) (fst recursion), snd recursion)
-                             where -- ver paralelizar
-                               e = (acumulador `oplus` (ap ! 0))
-                               recursion = scanear' oplus (dropS ap 1) e
-                               lAP = lengthS ap
+escanear oplus neutro ap
+  | lAP == 0  = (emptyS, neutro)
+  | lAP == 1  = (singletonS neutro, neutro `oplus` (ap ! 0))
+  | otherwise = (completar oplus neutro ap (fst s'), snd s')
+    where
+      lAP = lengthS ap 
+      s' = escanear oplus neutro (metamap oplus ap)
 
 metamap :: (a -> a -> a) -> A.Arr a -> A.Arr a
 metamap oplus ap | mod lAP 2 == 0 = tabulateS (\ x ->  oplus (ap ! (2 * x)) (ap ! (2 * x + 1))) mitad
@@ -123,8 +110,8 @@ metamap oplus ap | mod lAP 2 == 0 = tabulateS (\ x ->  oplus (ap ! (2 * x)) (ap 
                     mitad = div lAP 2
                     techoMitad = mitad + 1 
 
-magia :: (a -> a -> a) -> a -> A.Arr a -> A.Arr a-> A.Arr a
-magia oplus neutro s s' = tabulateS (\x -> if (mod x 2) == 0 then s' ! (div x  2) else oplus (s' ! (div x  2)) (s ! (x - 1))) ls
+completar :: (a -> a -> a) -> a -> A.Arr a -> A.Arr a-> A.Arr a
+completar oplus neutro s s' = tabulateS (\x -> if (mod x 2) == 0 then s' ! (div x  2) else oplus (s' ! (div x 2)) (s ! (x - 1))) ls
                         where
                             ls = lengthS s
 

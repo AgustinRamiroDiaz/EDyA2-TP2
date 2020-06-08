@@ -55,8 +55,10 @@ mostrarLista arr | lAP == 0   = NIL
                    lAP = lengthS arr 
 
 concatenar :: A.Arr a -> A.Arr a -> A.Arr a
-concatenar a b = tabulateS (\i-> if i < l1 then a ! i else b ! (i - l1) ) lt 
-               where
+concatenar a b  | l1 == 0 = b
+                | l2 == 0 = a
+                | otherwise = tabulateS (\i-> if i < l1 then a ! i else b ! (i - l1) ) lt 
+                where
                     (l1,l2) = (lengthS a) ||| (lengthS b) 
                     lt = (l1 + l2)
 

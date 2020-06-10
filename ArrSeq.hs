@@ -67,7 +67,7 @@ reducir :: (a -> a -> a) -> a -> A.Arr a -> a
 reducir oplus neutro ap  
   | lAP == 0 = neutro
   | lAP == 1 = oplus neutro (nthS ap 0)
-  | otherwise = reducir oplus neutro (contraer oplus ap)
+  | otherwise = reducir oplus neutro (contraer oplus ap lAP)
     where
     lAP = lengthS ap
 
@@ -82,15 +82,12 @@ escanear oplus neutro ap
       s' = escanear oplus neutro (contraer oplus ap)
 
 --Funciones auxiliares
-contraer :: (a -> a -> a) -> A.Arr a -> A.Arr a
-contraer oplus ap | mod lAP 2 == 0 = tabulateS (\ x -> oplus (ap ! (2 * x)) (ap ! (2 * x + 1))) mitad
-                  | otherwise      = tabulateS (\ x -> if x /= mitad then oplus (ap ! (2 * x)) (ap ! (2 * x + 1)) else ap ! (lAP - 1)) techoMitad
-                  where
-                    lAP   = lengthS ap
-                    mitad = div lAP 2
-                    techoMitad = mitad + 1
+contraer :: (a -> a -> a) -> A.Arr a -> Int -> A.Arr a
+contraer oplus ap lAP | mod lAP 2 == 0 = tabulateS (\x -> f x) mitad
+                      | otherwise      = tabulateS (\x -> if x /= mitad then f x else ap ! (lAP - 1)) (mitad + 1)
+                      where
+                        mitad = div lAP 2
+                        f x = oplus (ap ! (2 * x)) (ap ! (2 * x + 1))
 
-expandir :: (a -> a -> a) -> a -> A.Arr a -> A.Arr a-> A.Arr a
-expandir oplus neutro s s' = tabulateS (\x -> if (mod x 2) == 0 then s' ! (div x  2) else oplus (s' ! (div x 2)) (s ! (x - 1))) ls
-                        where
-                            ls = lengthS s
+expandir :: (a -> a -> a) -> a -> A.Arr a -> A.Arr a-> Int -> A.Arr a
+expandir oplus neutro s s' ls = tabulateS (\x -> if even x then s' ! (div x 2) else oplus (s' ! (div x 2)) (s ! (x - 1))) ls

@@ -6,8 +6,8 @@ import qualified Arr as A
 
 import  Arr ((!))
 
-(|||) :: a -> b -> (a, b)
-a ||| b = (a, b)
+import Par ((|||))
+
 
 instance Seq A.Arr where
     emptyS = A.empty
@@ -31,14 +31,6 @@ instance Seq A.Arr where
 mapear :: (a -> b) -> A.Arr a -> A.Arr b
 mapear f ap = tabulateS (\i -> f (ap ! i)) (lengthS ap) 
 
-{-
-como ! es constante la funcion (\i -> f (ap ! i)) es del mismo orden que f
-
-  COSTOS mapS
-    W (n) = W_tabulateS -en base a f- + k = O (sumatoria de x=1 a x=n de W f(x))
-
-    Analogo con profundidad de tabulateS
--}
 
 mostrarArbol :: A.Arr a -> TreeView a (A.Arr a)
 mostrarArbol arr | lAP == 1  = ELT (nthS arr 0)
@@ -62,17 +54,7 @@ concatenar a b  | l1 == 0 = b
                     (l1,l2) = (lengthS a) ||| (lengthS b) 
                     lt = (l1 + l2)
 
-{-
-la funcion lambda es constante por composicion de funciones constante
-   COSTOS
-
-        W (n) = W_tabulateS de la funcion lambda + k  = O(n)  (sumatoria de n W constantes)
-
-        S (n) = S_tabulateS de la funcion lambda + k  = O(1)  (maximo entre n S constantes)     
--}
-
 filtrar :: (a -> Bool) -> A.Arr a -> A.Arr a
-
 filtrar p ap = joinS $ tabulateS (\i-> let elem = (ap ! i) 
                                          in 
                                            if p elem then singletonS elem
@@ -99,23 +81,20 @@ escanear :: (a -> a -> a) -> a -> A.Arr a -> (A.Arr a, a)
 escanear oplus neutro ap
   | lAP == 0  = (emptyS, neutro)
   | lAP == 1  = (singletonS neutro, neutro `oplus` (ap ! 0))
-  | otherwise = (completar oplus neutro ap (fst s'), snd s')
+  | otherwise = (expandir oplus neutro ap (fst s'), snd s')
     where
       lAP = lengthS ap 
-      s' = escanear oplus neutro (metamap oplus ap)
+      s' = escanear oplus neutro (contraer oplus ap)
 
-metamap :: (a -> a -> a) -> A.Arr a -> A.Arr a
-metamap oplus ap | mod lAP 2 == 0 = tabulateS (\ x ->  oplus (ap ! (2 * x)) (ap ! (2 * x + 1))) mitad
+contraer :: (a -> a -> a) -> A.Arr a -> A.Arr a
+contraer oplus ap | mod lAP 2 == 0 = tabulateS (\ x ->  oplus (ap ! (2 * x)) (ap ! (2 * x + 1))) mitad
                  | otherwise      = tabulateS (\ x ->  if x /= mitad then oplus (ap ! (2 * x)) (ap ! (2 * x + 1)) else ap ! (lAP - 1)) techoMitad
                  where
                     lAP   = lengthS ap
                     mitad = div lAP 2
                     techoMitad = mitad + 1 
 
-completar :: (a -> a -> a) -> a -> A.Arr a -> A.Arr a-> A.Arr a
-completar oplus neutro s s' = tabulateS (\x -> if (mod x 2) == 0 then s' ! (div x  2) else oplus (s' ! (div x 2)) (s ! (x - 1))) ls
+expandir :: (a -> a -> a) -> a -> A.Arr a -> A.Arr a-> A.Arr a
+expandir oplus neutro s s' = tabulateS (\x -> if (mod x 2) == 0 then s' ! (div x  2) else oplus (s' ! (div x 2)) (s ! (x - 1))) ls
                         where
                             ls = lengthS s
-
-
-f = (\x y -> y+1)

@@ -31,7 +31,7 @@ tabular' :: (Int -> a) -> Int -> Int -> [a]
 tabular' f 1 i = [f i] 
 tabular' f n i = h : t
              where
-                (h,t) = (f i) ||| (tabular' f (n-1) (i+1)) 
+                (h, t) = (f i) ||| (tabular' f (n-1) (i+1)) 
 
 mapear :: (a -> b) -> [a] -> [b]
 mapear f [] = []
@@ -66,22 +66,20 @@ reducir oplus neutro [] = neutro
 reducir oplus neutro [x] = oplus neutro x
 reducir oplus neutro sequencia = reducir oplus neutro (contraer oplus sequencia)
 
+escanear :: (a -> a -> a) -> a -> [a] -> ([a], a)
+escanear oplus neutro [] = ([], neutro)
+escanear oplus neutro [x] = ([neutro], neutro `oplus` x)
+escanear oplus neutro s = (expandir oplus s (fst s') , snd s')
+    where s' = escanear oplus neutro (contraer oplus s)
+
+--Funciones auxiliares
 contraer :: (a -> a -> a) -> [a] -> [a]
 contraer oplus [] = []
 contraer oplus [x] = [x]
 contraer oplus (x:y:tail) = h:t  
                 where (h,t) = (oplus x y) ||| (contraer oplus tail)
 
-escanear :: (a -> a -> a) -> a -> [a] -> ([a], a)
-escanear oplus neutro [] = ([], neutro)
-escanear oplus neutro [x] = ([neutro], neutro `oplus` x)
-escanear oplus neutro s = (expandir oplus s (fst s') , snd s')           -- r
-    where s' = escanear oplus neutro (contraer oplus s)
-
 expandir :: (a -> a -> a) -> [a] -> [a] -> [a]
 expandir oplus [] [] = []
 expandir oplus [x] [x'] = [x']
 expandir oplus (hs:_:ts) (hs':ts') = hs': (hs' `oplus` hs) : expandir oplus ts ts'
-
-f = \x y -> y+1
-

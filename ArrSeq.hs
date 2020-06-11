@@ -76,10 +76,10 @@ escanear :: (a -> a -> a) -> a -> A.Arr a -> (A.Arr a, a)
 escanear oplus neutro ap
   | lAP == 0  = (emptyS, neutro)
   | lAP == 1  = (singletonS neutro, neutro `oplus` (ap ! 0))
-  | otherwise = (expandir oplus neutro ap (fst s'), snd s')
+  | otherwise = (expandir oplus neutro ap (fst s') lAP, snd s')
     where
       lAP = lengthS ap 
-      s' = escanear oplus neutro (contraer oplus ap)
+      s' = escanear oplus neutro (contraer oplus ap lAP)
 
 --Funciones auxiliares
 contraer :: (a -> a -> a) -> A.Arr a -> Int -> A.Arr a

@@ -57,10 +57,6 @@ mostrarLista :: [a] -> ListView a [a]
 mostrarLista [] = NIL
 mostrarLista (h: t) = CONS h t
 
-longitud [] = 0
-longitud (h:t) = 1 + longitud t
-
-
 reducir :: (a -> a -> a) -> a -> [a] -> a
 reducir oplus neutro [] = neutro
 reducir oplus neutro [x] = oplus neutro x
@@ -82,4 +78,6 @@ contraer oplus (x:y:tail) = h:t
 expandir :: (a -> a -> a) -> [a] -> [a] -> [a]
 expandir oplus [] [] = []
 expandir oplus [x] [x'] = [x']
-expandir oplus (hs:_:ts) (hs':ts') = hs': (hs' `oplus` hs) : expandir oplus ts ts'
+expandir oplus (hs:_:ts) (hs':ts') = hs': h : t
+                                  where
+                                      (h,t) = (hs' `oplus` hs) ||| (expandir oplus ts ts')
